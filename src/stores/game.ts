@@ -66,19 +66,23 @@ export const useGameStore = defineStore('game', {
       return (this.correctCount / answeredCount) * 100
     },
     score(): number {
-      const totalTime = this.totalTime
-      if (totalTime === 0) return 0
-      
-      const t = this.answers.length - this.nValue
-      const c = this.correctCount
-      const r = t / (totalTime / 60) // questions per minute
-      
-      if (t === 0) return 0
-      
-      const baseScore = 100 * Math.pow(c / t, 0.8) * Math.pow(r, 2)
-      const nBonus = 1 + (this.nValue - 1) / 5
-      
-      return Math.round(baseScore * nBonus)
+      if (!this.startTime || !this.endTime) return 0
+
+      const elapsedSec = (this.endTime - this.startTime) / 1000
+      if (elapsedSec === 0) return 0
+
+      const answered = this.answers.length - this.nValue  // 作答题数 t
+      if (answered <= 0) return 0
+
+      const c = this.correctCount                       // 正确题数 c
+      const speedFactor = Math.pow(c / elapsedSec, 0.8) // (c / t_sec)^α, α = 0.8
+      const accuracy = c / answered                     // r = 正确率
+      const accuracyFactor = Math.pow(accuracy, 2)      // r^β, β = 2
+
+      const base = 100 * speedFactor * accuracyFactor
+      const nBonus = 1 + (this.nValue - 1) / 5          // N 加权
+
+      return Math.round(base * nBonus)
     },
     totalTime(): number {
       if (!this.startTime || !this.endTime) return 0
