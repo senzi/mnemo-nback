@@ -1,29 +1,34 @@
 @import 'tailwindcss';
-@plugin 'daisyui';
+
+@plugin "daisyui" {
+  themes: nord --default, dim --prefersdark;
+}
 
 /* 移动端优化样式 */
 @media (max-width: 640px) {
+
   /* 确保在小屏幕上文本可读性 */
   .table {
     font-size: 0.75rem;
   }
-  
+
   /* 优化按钮在移动端的触摸体验 */
   .btn {
     min-height: 2.5rem;
     touch-action: manipulation;
   }
-  
+
   /* 确保表单元素在移动端易于操作 */
-  .input, .select {
+  .input,
+  .select {
     min-height: 2.5rem;
   }
-  
+
   /* 优化卡片在移动端的间距 */
   .card-body {
     padding: 1rem;
   }
-  
+
   /* 确保模态框和弹窗在移动端正确显示 */
   .modal-box {
     margin: 1rem;
@@ -32,7 +37,8 @@
 }
 
 /* 防止水平滚动 */
-html, body {
+html,
+body {
   overflow-x: hidden;
 }
 
@@ -42,13 +48,16 @@ html, body {
 }
 
 /* 确保图片和媒体内容响应式 */
-img, video {
+img,
+video {
   max-width: 100%;
   height: auto;
 }
 
 /* 优化焦点状态的可见性 */
-.btn:focus, .input:focus, .select:focus {
+.btn:focus,
+.input:focus,
+.select:focus {
   outline: 2px solid hsl(var(--p));
   outline-offset: 2px;
 }
