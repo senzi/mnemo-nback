@@ -8,7 +8,7 @@ export const useGameStore = defineStore('game', {
     const config = savedConfig ? JSON.parse(savedConfig) : {}
     
     return {
-      username: config.username || '',
+      username: 'user',
       nValue: config.nValue || 1,
       mode: config.mode || '12',
       currentQuestionIndex: 0,
@@ -91,11 +91,6 @@ export const useGameStore = defineStore('game', {
   },
 
   actions: {
-    setUsername(username: string) {
-      this.username = username
-      this.saveConfig()
-    },
-
     setNValue(n: number) {
       this.nValue = n
       this.saveConfig()
@@ -108,7 +103,6 @@ export const useGameStore = defineStore('game', {
 
     saveConfig() {
       const config = {
-        username: this.username,
         nValue: this.nValue,
         mode: this.mode
       }

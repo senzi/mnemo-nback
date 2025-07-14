@@ -10,35 +10,41 @@
           
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text">用户名</span>
-            </label>
-            <input 
-              type="text" 
-              placeholder="请输入用户名" 
-              class="input input-bordered w-full"
-              :value="gameStore.username"
-              @input="gameStore.setUsername(($event.target as HTMLInputElement).value)"
-            />
-          </div>
-
-          <div class="form-control w-full">
-            <label class="label">
               <span class="label-text">N值选择</span>
             </label>
-            <select class="select select-bordered w-full" :value="gameStore.nValue" @change="gameStore.setNValue(Number(($event.target as HTMLSelectElement).value))">
-              <option disabled value="">请选择N值</option>
-              <option v-for="n in 9" :key="n" :value="n">N{{ n }}</option>
-            </select>
+            <div class="grid grid-cols-3 gap-2">
+              <button 
+                v-for="n in 9" 
+                :key="n"
+                class="btn btn-sm"
+                :class="gameStore.nValue === n ? 'btn-primary' : 'btn-outline'"
+                @click="gameStore.setNValue(n)"
+              >
+                N{{ n }}
+              </button>
+            </div>
           </div>
 
           <div class="form-control">
             <label class="label">
               <span class="label-text">训练模式</span>
             </label>
-            <select class="select select-bordered w-full" :value="gameStore.mode" @change="gameStore.setMode(($event.target as HTMLSelectElement).value as '12' | 'unlimited')">
-              <option value="12">12题模式</option>
-              <option value="unlimited">无限模式</option>
-            </select>
+            <div class="flex gap-2">
+              <button 
+                class="btn btn-sm flex-1"
+                :class="gameStore.mode === '12' ? 'btn-primary' : 'btn-outline'"
+                @click="gameStore.setMode('12')"
+              >
+                12题模式
+              </button>
+              <button 
+                class="btn btn-sm flex-1"
+                :class="gameStore.mode === 'unlimited' ? 'btn-primary' : 'btn-outline'"
+                @click="gameStore.setMode('unlimited')"
+              >
+                无限模式
+              </button>
+            </div>
           </div>
 
           <div class="flex gap-2 mt-6">
@@ -78,7 +84,7 @@ import { computed } from 'vue'
 const gameStore = useGameStore()
 
 const canStart = computed(() => {
-  return gameStore.username.trim() !== '' && gameStore.nValue > 0
+  return gameStore.nValue > 0
 })
 
 const startTraining = () => {

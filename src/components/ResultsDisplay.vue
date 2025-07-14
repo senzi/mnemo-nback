@@ -3,7 +3,7 @@
     <div class="card bg-base-100 shadow-xl max-w-2xl w-full">
       <div class="card-body">
         <h1 class="card-title text-2xl text-center justify-center mb-6">
-          训练结果
+          训练结果 (N={{ gameStore.nValue }})
         </h1>
         
         <!-- Results Summary -->
