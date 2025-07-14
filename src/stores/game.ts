@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { GameState, Question, TrainingRecord, QuestionGeneratorResult } from '@/types/game'
+import type { GameState, Question, TrainingRecord, QuestionGeneratorResult, FilterOptions, AggregatedStats, StatsByN, StatsByMode } from '@/types/game'
 
 export const useGameStore = defineStore('game', {
   state: (): GameState => {
@@ -186,6 +186,9 @@ export const useGameStore = defineStore('game', {
         }
       }
       
+      // 计算首错位置
+      const firstErrorPosition = this.calculateFirstErrorPosition()
+      
       const record: TrainingRecord = {
         username: this.username,
         mode: this.mode,
@@ -196,11 +199,26 @@ export const useGameStore = defineStore('game', {
         accuracy: this.accuracy,
         score: this.score,
         timestamp: new Date().toISOString(),
-        exit_reason: exitReason
+        exit_reason: exitReason,
+        first_error_position: firstErrorPosition
       }
 
       this.saveRecord(record)
       this.gamePhase = 'results'
+    },
+
+    calculateFirstErrorPosition(): number | undefined {
+      // 从第N+1题开始检查，找到第一个错误的题目位置
+      for (let i = this.nValue; i < this.answers.length; i++) {
+        const currentAnswer = this.answers[i]
+        if (currentAnswer !== undefined) {
+          const nBackAnswer = this.questions[i - this.nValue].answer
+          if (currentAnswer !== nBackAnswer) {
+            return i - this.nValue + 1 // 返回相对于作答题目的位置（1-12）
+          }
+        }
+      }
+      return undefined // 没有错误
     },
 
     saveRecord(record: TrainingRecord) {
@@ -224,6 +242,152 @@ export const useGameStore = defineStore('game', {
 
     goToStatistics() {
       this.gamePhase = 'statistics'
+    },
+
+    // 统计分析方法
+    filterRecords(records: TrainingRecord[], filters: FilterOptions): TrainingRecord[] {
+      return records.filter(record => {
+        // 模式筛选
+        if (filters.mode && filters.mode !== 'all' && record.mode !== filters.mode) {
+          return false
+        }
+        
+        // N值筛选
+        if (filters.nValue && filters.nValue !== 'all' && record.n !== filters.nValue) {
+          return false
+        }
+        
+        // 时间范围筛选
+        if (filters.dateRange) {
+          const recordDate = new Date(record.timestamp)
+          const startDate = new Date(filters.dateRange.start)
+          const endDate = new Date(filters.dateRange.end)
+          if (recordDate < startDate || recordDate > endDate) {
+            return false
+          }
+        }
+        
+        return true
+      })
+    },
+
+    calculateAggregatedStats(records: TrainingRecord[]): AggregatedStats {
+      if (records.length === 0) {
+        return {
+          challengeCount: 0,
+          averageAccuracy: 0,
+          averageTime: 0,
+          averageScore: 0,
+          firstErrorDistribution: new Array(13).fill(0)
+        }
+      }
+
+      const mode = records[0].mode
+      const challengeCount = records.length
+      const averageAccuracy = records.reduce((sum, r) => sum + r.accuracy, 0) / challengeCount
+      const averageTime = records.reduce((sum, r) => sum + r.total_time_sec, 0) / challengeCount
+      const averageScore = records.reduce((sum, r) => sum + r.score, 0) / challengeCount
+
+      // 计算首错位置分布
+      const firstErrorDistribution = new Array(13).fill(0) // 1-12题 + 未出错
+      records.forEach(record => {
+        if (record.first_error_position !== undefined) {
+          firstErrorDistribution[record.first_error_position - 1]++
+        } else {
+          firstErrorDistribution[12]++ // 未出错
+        }
+      })
+
+      const stats: AggregatedStats = {
+        challengeCount,
+        averageAccuracy,
+        averageTime,
+        averageScore,
+        firstErrorDistribution
+      }
+
+      // 无限模式特有统计
+      if (mode === 'unlimited') {
+        const maxQuestions = Math.max(...records.map(r => r.question_count))
+        const averageQuestions = records.reduce((sum, r) => sum + r.question_count, 0) / challengeCount
+        const manualExits = records.filter(r => r.exit_reason === 'abandoned').length
+        const errorExits = records.filter(r => r.exit_reason === 'completed').length
+        
+        stats.maxQuestions = maxQuestions
+        stats.averageQuestions = averageQuestions
+        stats.exitReasonRatio = {
+          manual: manualExits / challengeCount,
+          error: errorExits / challengeCount
+        }
+      }
+
+      return stats
+    },
+
+    getStatsByMode(filters: FilterOptions = {}): StatsByMode {
+      const allRecords = this.getStoredRecords()
+      const filteredRecords = this.filterRecords(allRecords, filters)
+      
+      const result: StatsByMode = {
+        '12': {},
+        'unlimited': {}
+      }
+
+      // 按模式和N值分组
+      const groupedRecords = filteredRecords.reduce((acc, record) => {
+        const mode = record.mode
+        const n = record.n
+        
+        if (!acc[mode]) acc[mode] = {}
+        if (!acc[mode][n]) acc[mode][n] = []
+        
+        acc[mode][n].push(record)
+        return acc
+      }, {} as Record<string, Record<number, TrainingRecord[]>>)
+
+      // 计算每个组的统计数据
+      Object.keys(groupedRecords).forEach(mode => {
+        Object.keys(groupedRecords[mode]).forEach(nStr => {
+          const n = parseInt(nStr)
+          const records = groupedRecords[mode][n]
+          result[mode as '12' | 'unlimited'][n] = this.calculateAggregatedStats(records)
+        })
+      })
+
+      return result
+    },
+
+    getTimeSeriesData(filters: FilterOptions = {}) {
+      const allRecords = this.getStoredRecords()
+      const filteredRecords = this.filterRecords(allRecords, filters)
+      
+      return filteredRecords
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+        .map((record, index) => ({
+          index: index + 1,
+          timestamp: record.timestamp,
+          accuracy: record.accuracy,
+          score: record.score,
+          totalTime: record.total_time_sec,
+          n: record.n,
+          mode: record.mode
+        }))
+    },
+
+    getFirstErrorDistribution(filters: FilterOptions = {}) {
+      const allRecords = this.getStoredRecords()
+      const filteredRecords = this.filterRecords(allRecords, filters)
+      
+      const distribution = new Array(13).fill(0) // 1-12题 + 未出错
+      filteredRecords.forEach(record => {
+        if (record.first_error_position !== undefined) {
+          distribution[record.first_error_position - 1]++
+        } else {
+          distribution[12]++ // 未出错
+        }
+      })
+      
+      return distribution
     }
   }
 })

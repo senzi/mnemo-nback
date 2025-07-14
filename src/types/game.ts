@@ -9,6 +9,7 @@ export interface TrainingRecord {
   score: number
   timestamp: string
   exit_reason: 'completed' | 'abandoned'
+  first_error_position?: number // 首次出错的题号，如果没有出错则为undefined
 }
 
 export interface Question {
@@ -40,8 +41,40 @@ export interface QuestionGeneratorResult {
 
 export interface StatisticsData {
   records: TrainingRecord[]
-  firstErrorDistribution: Record<number, number>
+  firstErrorDistribution: Record<number, number[]>
   averageAccuracy: number
   averageScore: number
   totalTrainings: number
+}
+
+export interface FilterOptions {
+  mode?: '12' | 'unlimited' | 'all'
+  nValue?: number | 'all'
+  dateRange?: {
+    start: string
+    end: string
+  }
+}
+
+export interface AggregatedStats {
+  challengeCount: number
+  averageAccuracy: number
+  averageTime: number
+  averageScore: number
+  maxQuestions?: number
+  averageQuestions?: number
+  exitReasonRatio?: {
+    manual: number
+    error: number
+  }
+  firstErrorDistribution: number[]
+}
+
+export interface StatsByN {
+  [key: number]: AggregatedStats
+}
+
+export interface StatsByMode {
+  '12': StatsByN
+  'unlimited': StatsByN
 }
