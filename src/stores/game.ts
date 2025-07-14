@@ -2,17 +2,23 @@ import { defineStore } from 'pinia'
 import type { GameState, Question, TrainingRecord, QuestionGeneratorResult } from '@/types/game'
 
 export const useGameStore = defineStore('game', {
-  state: (): GameState => ({
-    username: '',
-    nValue: 1,
-    mode: '12',
-    currentQuestionIndex: 0,
-    questions: [],
-    answers: [],
-    startTime: null,
-    endTime: null,
-    gamePhase: 'config'
-  }),
+  state: (): GameState => {
+    // 从localStorage加载缓存的配置
+    const savedConfig = localStorage.getItem('mnemo-nback-config')
+    const config = savedConfig ? JSON.parse(savedConfig) : {}
+    
+    return {
+      username: config.username || '',
+      nValue: config.nValue || 1,
+      mode: config.mode || '12',
+      currentQuestionIndex: 0,
+      questions: [],
+      answers: [],
+      startTime: null,
+      endTime: null,
+      gamePhase: 'config'
+    }
+  },
 
   getters: {
     totalQuestions(): number {
@@ -23,25 +29,41 @@ export const useGameStore = defineStore('game', {
     },
     isTrainingComplete(): boolean {
       if (this.mode === '12') {
-        return this.currentQuestionIndex >= 12
+        // 检查是否已经作答了12题
+        let answeredCount = 0
+        for (let i = this.nValue; i < this.answers.length; i++) {
+          if (this.answers[i] !== undefined) {
+            answeredCount++
+          }
+        }
+        return answeredCount >= 12
       }
       return false // unlimited mode needs manual stop
     },
     correctCount(): number {
       let count = 0
+      // 从第N+1题开始计算，只计算已作答的题目
       for (let i = this.nValue; i < this.answers.length; i++) {
         const currentAnswer = this.answers[i]
-        const nBackAnswer = this.questions[i - this.nValue].answer
-        if (currentAnswer === nBackAnswer) {
-          count++
+        if (currentAnswer !== undefined) {
+          const nBackAnswer = this.questions[i - this.nValue].answer
+          if (currentAnswer === nBackAnswer) {
+            count++
+          }
         }
       }
       return count
     },
     accuracy(): number {
-      const validQuestions = Math.max(0, this.answers.length - this.nValue)
-      if (validQuestions === 0) return 0
-      return (this.correctCount / validQuestions) * 100
+      // 计算已作答的题目数量
+      let answeredCount = 0
+      for (let i = this.nValue; i < this.answers.length; i++) {
+        if (this.answers[i] !== undefined) {
+          answeredCount++
+        }
+      }
+      if (answeredCount === 0) return 0
+      return (this.correctCount / answeredCount) * 100
     },
     score(): number {
       const totalTime = this.totalTime
@@ -67,26 +89,46 @@ export const useGameStore = defineStore('game', {
   actions: {
     setUsername(username: string) {
       this.username = username
+      this.saveConfig()
     },
 
     setNValue(n: number) {
       this.nValue = n
+      this.saveConfig()
     },
 
     setMode(mode: '12' | 'unlimited') {
       this.mode = mode
+      this.saveConfig()
     },
 
-    generateQuestions(count: number) {
+    saveConfig() {
+      const config = {
+        username: this.username,
+        nValue: this.nValue,
+        mode: this.mode
+      }
+      localStorage.setItem('mnemo-nback-config', JSON.stringify(config))
+    },
+
+    generateQuestions() {
       this.questions = []
-      for (let i = 0; i < count; i++) {
+      let totalQuestions = this.nValue // 前N题用于记忆
+      
+      if (this.mode === '12') {
+        totalQuestions += 12 // 加上12题用于作答
+      } else {
+        totalQuestions += 100 // 无限模式先生成100题
+      }
+      
+      for (let i = 0; i < totalQuestions; i++) {
         this.questions.push({
           id: i,
           ...this.generateQuestion(),
           timestamp: Date.now()
         })
       }
-      this.answers = new Array(count).fill(undefined)
+      this.answers = new Array(totalQuestions).fill(undefined)
     },
 
     generateQuestion(): QuestionGeneratorResult {
@@ -99,15 +141,9 @@ export const useGameStore = defineStore('game', {
     },
 
     startTraining() {
-      this.currentQuestionIndex = 0
+      this.currentQuestionIndex = this.nValue // 从第N+1题开始作答
       this.startTime = Date.now()
       this.gamePhase = 'training'
-      
-      if (this.mode === '12') {
-        this.generateQuestions(12)
-      } else {
-        this.generateQuestions(100) // Start with 100, can generate more as needed
-      }
     },
 
     startPreview() {
@@ -142,11 +178,19 @@ export const useGameStore = defineStore('game', {
     finishTraining(exitReason: 'completed' | 'abandoned' = 'completed') {
       this.endTime = Date.now()
       
+      // 计算实际作答的题目数量
+      let answeredCount = 0
+      for (let i = this.nValue; i < this.answers.length; i++) {
+        if (this.answers[i] !== undefined) {
+          answeredCount++
+        }
+      }
+      
       const record: TrainingRecord = {
         username: this.username,
         mode: this.mode,
         n: this.nValue,
-        question_count: this.answers.length - this.nValue,
+        question_count: answeredCount,
         correct_count: this.correctCount,
         total_time_sec: this.totalTime,
         accuracy: this.accuracy,

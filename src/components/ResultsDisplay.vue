@@ -36,27 +36,33 @@
                 <th>题目</th>
                 <th>正确答案</th>
                 <th>你的答案</th>
-                <th>N步前</th>
+                <th>N步前答案</th>
                 <th>是否正确</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(question, index) in validQuestions" :key="index">
-                <td>{{ question.id + 1 }}</td>
+              <!-- 前N题：只显示题目和答案，不显示序号 -->
+              <tr v-for="(question, index) in memoryQuestions" :key="'memory-' + index" class="bg-base-300">
+                <td class="text-gray-500">-</td>
                 <td>{{ question.a }} + {{ question.b }} = ?</td>
                 <td>{{ question.answer }}</td>
-                <td>{{ gameStore.answers[index] }}</td>
-                <td v-if="index >= gameStore.nValue">
-                  {{ gameStore.questions[index - gameStore.nValue].answer }}
-                </td>
-                <td v-else>-</td>
+                <td class="text-gray-500">-</td>
+                <td class="text-gray-500">-</td>
                 <td>
-                  <span v-if="index >= gameStore.nValue" 
-                        :class="getResultClass(index)"
-                        class="badge">
-                    {{ getResultText(index) }}
+                  <span class="badge badge-ghost">记忆题</span>
+                </td>
+              </tr>
+              <!-- 作答题：显示完整信息 -->
+              <tr v-for="(question, index) in answeredQuestions" :key="'answer-' + index">
+                <td>{{ index + 1 }}</td>
+                <td>{{ question.a }} + {{ question.b }} = ?</td>
+                <td>{{ question.answer }}</td>
+                <td>{{ question.userAnswer }}</td>
+                <td>{{ question.nBackAnswer }}</td>
+                <td>
+                  <span :class="question.isCorrect ? 'badge-success' : 'badge-error'" class="badge">
+                    {{ question.isCorrect ? '正确' : '错误' }}
                   </span>
-                  <span v-else class="badge badge-ghost">-</span>
                 </td>
               </tr>
             </tbody>
@@ -86,21 +92,29 @@ import { computed } from 'vue'
 
 const gameStore = useGameStore()
 
-const validQuestions = computed(() => {
-  return gameStore.questions.slice(gameStore.nValue)
+// 前N题：用于记忆的题目
+const memoryQuestions = computed(() => {
+  return gameStore.questions.slice(0, gameStore.nValue)
 })
 
-const getResultClass = (index: number): string => {
-  const correctAnswer = gameStore.questions[index - gameStore.nValue].answer
-  const userAnswer = gameStore.answers[index]
-  return userAnswer === correctAnswer ? 'badge-success' : 'badge-error'
-}
-
-const getResultText = (index: number): string => {
-  const correctAnswer = gameStore.questions[index - gameStore.nValue].answer
-  const userAnswer = gameStore.answers[index]
-  return userAnswer === correctAnswer ? '正确' : '错误'
-}
+// 作答题：需要作答的题目（从第N+1题开始）
+const answeredQuestions = computed(() => {
+  const questions = []
+  for (let i = gameStore.nValue; i < gameStore.questions.length; i++) {
+    const userAnswer = gameStore.answers[i]
+    if (userAnswer !== undefined) {
+      const currentQuestion = gameStore.questions[i]
+      const nBackAnswer = gameStore.questions[i - gameStore.nValue].answer
+      questions.push({
+        ...currentQuestion,
+        userAnswer,
+        nBackAnswer,
+        isCorrect: userAnswer === nBackAnswer
+      })
+    }
+  }
+  return questions
+})
 
 const exportResults = () => {
   const data = {

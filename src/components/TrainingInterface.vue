@@ -39,34 +39,26 @@
           <button 
             v-for="num in 10" 
             :key="num"
-            class="btn btn-lg"
-            :class="{ 'btn-primary': selectedAnswer === num, 'btn-outline': selectedAnswer !== num }"
-            @click="selectAnswer(num)"
+            class="btn btn-lg btn-outline"
+            @click="submitAnswer(num)"
           >
             {{ num }}
           </button>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex gap-2">
+        <div class="flex justify-center">
           <button 
-            class="btn btn-secondary flex-1" 
+            class="btn btn-secondary" 
             @click="gameStore.finishTraining('abandoned')"
           >
             放弃训练
-          </button>
-          <button 
-            class="btn btn-primary flex-1" 
-            :disabled="selectedAnswer === null"
-            @click="submitAnswer"
-          >
-            提交答案
           </button>
         </div>
 
         <!-- Stats -->
         <div class="mt-4 text-center text-sm text-base-content/70">
-          已答题: {{ gameStore.currentQuestionIndex }} | 
+          已答题: {{ answeredCount }} | 
           正确: {{ gameStore.correctCount }} | 
           准确率: {{ gameStore.accuracy.toFixed(1) }}%
         </div>
@@ -77,27 +69,33 @@
 
 <script setup lang="ts">
 import { useGameStore } from '@/stores/game'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 const gameStore = useGameStore()
-const selectedAnswer = ref<number | null>(null)
 
 const currentQuestion = computed(() => gameStore.currentQuestion)
 const showNBackInfo = computed(() => gameStore.currentQuestionIndex >= gameStore.nValue)
 
-const selectAnswer = (answer: number) => {
-  selectedAnswer.value = answer
-}
+// 计算已作答题目数量
+const answeredCount = computed(() => {
+  let count = 0
+  for (let i = gameStore.nValue; i < gameStore.answers.length; i++) {
+    if (gameStore.answers[i] !== undefined) {
+      count++
+    }
+  }
+  return count
+})
 
-const submitAnswer = () => {
-  if (selectedAnswer.value !== null && currentQuestion.value) {
-    gameStore.submitAnswer(selectedAnswer.value)
+const submitAnswer = (answer: number) => {
+  if (currentQuestion.value) {
+    gameStore.submitAnswer(answer)
     
+    // 检查是否完成训练（在提交答案后立即检查）
     if (gameStore.isTrainingComplete) {
-      gameStore.finishTraining()
+      gameStore.finishTraining('completed')
     } else {
       gameStore.nextQuestion()
-      selectedAnswer.value = null
     }
   }
 }

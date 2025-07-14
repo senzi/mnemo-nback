@@ -16,7 +16,8 @@
               type="text" 
               placeholder="请输入用户名" 
               class="input input-bordered w-full"
-              v-model="gameStore.username"
+              :value="gameStore.username"
+              @input="gameStore.setUsername(($event.target as HTMLInputElement).value)"
             />
           </div>
 
@@ -24,7 +25,7 @@
             <label class="label">
               <span class="label-text">N值选择</span>
             </label>
-            <select class="select select-bordered w-full" v-model="gameStore.nValue">
+            <select class="select select-bordered w-full" :value="gameStore.nValue" @change="gameStore.setNValue(Number(($event.target as HTMLSelectElement).value))">
               <option disabled value="">请选择N值</option>
               <option v-for="n in 9" :key="n" :value="n">N{{ n }}</option>
             </select>
@@ -34,7 +35,7 @@
             <label class="label">
               <span class="label-text">训练模式</span>
             </label>
-            <select class="select select-bordered w-full" v-model="gameStore.mode">
+            <select class="select select-bordered w-full" :value="gameStore.mode" @change="gameStore.setMode(($event.target as HTMLSelectElement).value as '12' | 'unlimited')">
               <option value="12">12题模式</option>
               <option value="unlimited">无限模式</option>
             </select>
@@ -82,6 +83,8 @@ const canStart = computed(() => {
 
 const startTraining = () => {
   if (canStart.value) {
+    // 先生成题目，然后进入预览阶段
+    gameStore.generateQuestions()
     gameStore.startPreview()
   }
 }
