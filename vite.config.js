@@ -10,4 +10,10 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  build: {
+    rollupOptions: {
+      // 避免使用 native bindings
+      treeshake: true,
+    },
+  },
 })
