@@ -258,9 +258,33 @@ interface TrainingRecord {
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
 
+## 📚 学术引用与致谢
+
+### 研究背景
+
+本训练工具基于工作记忆研究中经典的 N-back 任务构建，灵感参考：
+
+> Mandrick, K., Peysakhovich, V., Rémy, F., Lepron, E., & Causse, M. (2016).  
+> *Neural and psychophysiological correlates of human performance under stress and high mental workload.*  
+> Biological Psychology, 121, 62–73.  
+> [DOI:10.1016/j.biopsycho.2016.10.002](http://dx.doi.org/10.1016/j.biopsycho.2016.10.002)
+
+**论文获取：** 作者在 ISAE-SUPAERO 的开放平台提供了论文全文：  
+[点击下载 Author-Accepted Manuscript (PDF)](https://openscience.isae-supaero.fr/digitalCollection/DigitalCollectionAttachmentDownloadHandler.ashx?documentId=10852&parentDocumentId=3950&skipCopyright=true&skipWatermark=true)
+
+### N-back 任务的科学价值
+
+N-back 任务是认知心理学和神经科学中广泛使用的工作记忆测试范式，具有以下应用价值：
+
+- **认知能力评估与训练**：有效评估和训练大脑的工作记忆容量
+- **注意力和专注力提升**：在高认知负荷环境下提升表现
+- **学习效率优化**：改善信息处理和记忆维持能力
+- **压力环境下的认知表现研究**：为相关领域提供科学依据
+
 ## 🙏 致谢
 
-- 基于 N-back 认知训练理论
+- 感谢 Mandrick 等研究者在认知科学领域的贡献和开放科学精神的践行
+- 基于 N-back 认知训练理论的科学实现
 - 使用 Vue 3 生态系统构建
 - UI 设计灵感来自现代化训练应用
 

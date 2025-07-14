@@ -88,10 +88,13 @@
     </div>
 
     <!-- Site Footer -->
-    <SiteFooter />
+    <SiteFooter @show-reference="showReferenceModal = true" />
 
     <!-- Game Rules Modal -->
     <GameRulesModal :is-open="showRulesModal" @close="showRulesModal = false" />
+    
+    <!-- Reference Modal -->
+    <ReferenceModal :is-open="showReferenceModal" @close="showReferenceModal = false" />
   </div>
 </template>
 
@@ -102,6 +105,7 @@ import TrainingInterface from '@/components/TrainingInterface.vue'
 import ResultsDisplay from '@/components/ResultsDisplay.vue'
 import StatisticsView from '@/components/StatisticsView.vue'
 import GameRulesModal from '@/components/GameRulesModal.vue'
+import ReferenceModal from '@/components/ReferenceModal.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
 import { computed, ref } from 'vue'
 
@@ -109,6 +113,7 @@ const gameStore = useGameStore()
 
 // Modal state
 const showRulesModal = ref(false)
+const showReferenceModal = ref(false)
 
 const canStart = computed(() => {
   return gameStore.nValue > 0
