@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "bun install --no-save --verbose --include=dev && bun run build:vite",
+    "build:vite": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
