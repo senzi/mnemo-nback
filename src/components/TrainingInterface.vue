@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen bg-base-200 flex items-center justify-center p-4">
-    <div class="card bg-base-100 shadow-xl max-w-2xl w-full">
-      <div class="card-body">
-        <h1 class="card-title text-2xl text-center justify-center mb-4">
+  <div class="min-h-screen bg-base-200 flex items-center justify-center p-2 sm:p-4">
+    <div class="card bg-base-100 shadow-xl max-w-2xl w-full mx-auto">
+      <div class="card-body p-3 sm:p-6">
+        <h1 class="card-title text-lg sm:text-2xl text-center justify-center mb-3 sm:mb-4">
           M-nback 训练
         </h1>
         
         <!-- Progress Bar -->
-        <div class="mb-4">
-          <div class="flex justify-between text-sm mb-1">
+        <div class="mb-3 sm:mb-4">
+          <div class="flex justify-between text-xs sm:text-sm mb-1">
             <span>进度</span>
             <span>{{ gameStore.currentQuestionIndex + 1 }} / {{ gameStore.totalQuestions }}</span>
           </div>
@@ -18,28 +18,28 @@
         </div>
 
         <!-- Current Question -->
-        <div v-if="currentQuestion" class="text-center mb-6">
-          <div class="text-4xl font-bold mb-2">
+        <div v-if="currentQuestion" class="text-center mb-4 sm:mb-6">
+          <div class="text-2xl sm:text-4xl font-bold mb-2">
             {{ currentQuestion.a }} + {{ currentQuestion.b }} = ?
           </div>
-          <div class="text-sm text-base-content/70">
+          <div class="text-xs sm:text-sm text-base-content/70">
             第 {{ gameStore.currentQuestionIndex + 1 }} 题
           </div>
         </div>
 
         <!-- N-back Info -->
-        <div v-if="showNBackInfo" class="alert alert-info mb-4">
-          <span>
+        <div v-if="showNBackInfo" class="alert alert-info mb-3 sm:mb-4 p-3">
+          <span class="text-xs sm:text-sm">
             请判断当前答案是否与 {{ gameStore.nValue }} 步前的答案相同
           </span>
         </div>
 
         <!-- Answer Buttons -->
-        <div class="grid grid-cols-5 gap-2 mb-6">
+        <div class="grid grid-cols-5 gap-1 sm:gap-2 mb-4 sm:mb-6">
           <button 
             v-for="num in 10" 
             :key="num"
-            class="btn btn-lg btn-outline"
+            class="btn btn-sm sm:btn-lg btn-outline min-h-10 sm:min-h-16 text-sm sm:text-lg"
             @click="submitAnswer(num)"
           >
             {{ num }}
@@ -47,9 +47,9 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex justify-center">
+        <div class="flex justify-center mb-3 sm:mb-4">
           <button 
-            class="btn btn-secondary" 
+            class="btn btn-secondary btn-sm sm:btn-md" 
             @click="gameStore.finishTraining('abandoned')"
           >
             放弃训练
@@ -57,10 +57,12 @@
         </div>
 
         <!-- Stats -->
-        <div class="mt-4 text-center text-sm text-base-content/70">
-          已答题: {{ answeredCount }} | 
-          正确: {{ gameStore.correctCount }} | 
-          准确率: {{ gameStore.accuracy.toFixed(1) }}%
+        <div class="text-center text-xs sm:text-sm text-base-content/70">
+          <div class="flex flex-col sm:flex-row sm:justify-center sm:gap-4">
+            <span>已答题: {{ answeredCount }}</span>
+            <span>正确: {{ gameStore.correctCount }}</span>
+            <span>准确率: {{ gameStore.accuracy.toFixed(1) }}%</span>
+          </div>
         </div>
       </div>
     </div>

@@ -2,21 +2,21 @@
   <div class="min-h-screen bg-base-200 flex items-center justify-center p-4">
     <!-- Config Screen -->
     <template v-if="gameStore.gamePhase === 'config'">
-      <div class="card bg-base-100 shadow-xl max-w-md w-full">
-        <div class="card-body">
-          <h1 class="card-title text-2xl text-center justify-center mb-4">
+      <div class="card bg-base-100 shadow-xl max-w-md w-full mx-auto">
+        <div class="card-body p-4 sm:p-6">
+          <h1 class="card-title text-xl sm:text-2xl text-center justify-center mb-4">
             M-nback 记忆训练
           </h1>
           
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text">N值选择</span>
+              <span class="label-text text-sm sm:text-base">N值选择</span>
             </label>
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-3 gap-1 sm:gap-2">
               <button 
                 v-for="n in 9" 
                 :key="n"
-                class="btn btn-sm"
+                class="btn btn-xs sm:btn-sm min-h-8 sm:min-h-12"
                 :class="gameStore.nValue === n ? 'btn-primary' : 'btn-outline'"
                 @click="gameStore.setNValue(n)"
               >
@@ -27,18 +27,18 @@
 
           <div class="form-control">
             <label class="label">
-              <span class="label-text">训练模式</span>
+              <span class="label-text text-sm sm:text-base">训练模式</span>
             </label>
             <div class="flex gap-2">
               <button 
-                class="btn btn-sm flex-1"
+                class="btn btn-xs sm:btn-sm flex-1 min-h-8 sm:min-h-12"
                 :class="gameStore.mode === '12' ? 'btn-primary' : 'btn-outline'"
                 @click="gameStore.setMode('12')"
               >
                 12题模式
               </button>
               <button 
-                class="btn btn-sm flex-1"
+                class="btn btn-xs sm:btn-sm flex-1 min-h-8 sm:min-h-12"
                 :class="gameStore.mode === 'unlimited' ? 'btn-primary' : 'btn-outline'"
                 @click="gameStore.setMode('unlimited')"
               >
@@ -47,11 +47,11 @@
             </div>
           </div>
 
-          <div class="flex gap-2 mt-6">
-            <button class="btn btn-primary flex-1" @click="startTraining" :disabled="!canStart">
+          <div class="flex flex-col sm:flex-row gap-2 mt-6">
+            <button class="btn btn-primary flex-1 btn-sm sm:btn-md" @click="startTraining" :disabled="!canStart">
               开始训练
             </button>
-            <button class="btn btn-secondary" @click="gameStore.goToStatistics">
+            <button class="btn btn-secondary btn-sm sm:btn-md" @click="gameStore.goToStatistics">
               统计
             </button>
           </div>

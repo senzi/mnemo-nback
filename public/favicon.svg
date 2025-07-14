@@ -1,0 +1,13 @@
+<!-- mnemo-nback favicon  — 16×16 / 32×32 / 64×64 scalable -->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- 背景圆角方块 -->
+  <rect x="2" y="2" width="60" height="60" rx="12" fill="#16a34a"/>
+  <!-- 叠置记忆卡片：象征 n-back -->
+  <g stroke="#ffffff" stroke-width="3" stroke-linejoin="round" fill="none">
+    <rect x="20" y="16" width="24" height="32" rx="4"/>
+    <rect x="16" y="20" width="24" height="32" rx="4"/>
+  </g>
+  <!-- 中央 N 字母 -->
+  <path d="M28 44 V24 L36 40 V24" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+</svg>
