@@ -6,6 +6,13 @@
           M-nback 训练
         </h1>
         
+        <!-- Timer Display -->
+        <div class="text-center mb-3 sm:mb-4">
+          <div class="badge badge-primary badge-lg text-sm sm:text-base font-mono">
+            ⏱️ {{ formatTime(elapsedTime) }}
+          </div>
+        </div>
+        
         <!-- Progress Bar -->
         <div class="mb-3 sm:mb-4">
           <div class="flex justify-between text-xs sm:text-sm mb-1">
@@ -30,7 +37,7 @@
         <!-- N-back Info -->
         <div v-if="showNBackInfo" class="alert alert-info mb-3 sm:mb-4 p-3">
           <span class="text-xs sm:text-sm">
-            请判断当前答案是否与 {{ gameStore.nValue }} 步前的答案相同
+            请选择 {{ gameStore.nValue }} 道题前的答案
           </span>
         </div>
 
@@ -71,9 +78,36 @@
 
 <script setup lang="ts">
 import { useGameStore } from '@/stores/game'
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 
 const gameStore = useGameStore()
+
+// Timer functionality
+const elapsedTime = ref(0)
+let animationId: number | null = null
+
+const formatTime = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
+
+const updateTimer = () => {
+  if (gameStore.startTime) {
+    elapsedTime.value = Math.floor((Date.now() - gameStore.startTime) / 1000)
+    animationId = requestAnimationFrame(updateTimer)
+  }
+}
+
+onMounted(() => {
+  updateTimer()
+})
+
+onUnmounted(() => {
+  if (animationId) {
+    cancelAnimationFrame(animationId)
+  }
+})
 
 const currentQuestion = computed(() => gameStore.currentQuestion)
 const showNBackInfo = computed(() => gameStore.currentQuestionIndex >= gameStore.nValue)
